@@ -13,6 +13,9 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Runner.UserProperties;
+using System.IO;
+using System.Diagnostics;
+using System.Xml;
 
 namespace Runner
 {
@@ -21,6 +24,8 @@ namespace Runner
     /// </summary>
     public partial class MainWindow : Window
     {
+        private string _mainDirPath;
+        private string _fileSetting;
 
         public static readonly DependencyProperty DeviceInfoProperty =
             DependencyProperty.Register("SlaveAddr", typeof(string), typeof(MainWindow), new PropertyMetadata(new PropertyChangedCallback(OnDeviceInfoPropertyChanged)));
@@ -37,8 +42,67 @@ namespace Runner
         }
         public MainWindow()
         {
-            SlaveAddr = "1C";
-            InitializeComponent();
+            _mainDirPath = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
+
+            _fileSetting = _mainDirPath+ "\\ToucherSetting.xml";
+
+            if (false == File.Exists(_fileSetting))
+            {
+                CreateXMLDocument();
+            }
+                InitializeComponent();
+        }
+
+        public void CreateXMLDocument()
+
+        {
+
+            XmlDocument xmlDoc = new XmlDocument();
+            //加入XML的声明段落,<?xml version="1.0" encoding="gb2312"?>
+
+            XmlDeclaration xmlDeclar;
+
+            xmlDeclar = xmlDoc.CreateXmlDeclaration("1.0", "gb2312", null);
+
+            xmlDoc.AppendChild(xmlDeclar);
+            //加入Employees根元素
+
+            XmlElement xmlElement = xmlDoc.CreateElement("", "Employees", "");
+
+            xmlDoc.AppendChild(xmlElement);
+            //添加节点
+
+            XmlNode root = xmlDoc.SelectSingleNode("Employees");
+
+            XmlElement xe1 = xmlDoc.CreateElement("Node");
+
+            xe1.SetAttribute("Name", "李明");
+
+            xe1.SetAttribute("ISB", "2-3631-4");
+            //添加子节点
+
+            XmlElement xeSub1 = xmlDoc.CreateElement("title");
+
+            xeSub1.InnerText = "学习VS";
+
+            xe1.AppendChild(xeSub1);
+
+
+            XmlElement xeSub2 = xmlDoc.CreateElement("price");
+
+            xe1.AppendChild(xeSub2);
+
+            XmlElement xeSub3 = xmlDoc.CreateElement("weight");
+
+            xeSub3.InnerText = "20";
+
+            xeSub2.AppendChild(xeSub3);
+
+
+            root.AppendChild(xe1);
+
+            xmlDoc.Save(_fileSetting);//保存的路径
+
         }
 
         private void runStart_Click(object sender, RoutedEventArgs e)
