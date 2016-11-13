@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Runner.UserProperties;
 
 namespace Runner
 {
@@ -27,7 +28,9 @@ namespace Runner
 
         private void runStart_Click(object sender, RoutedEventArgs e)
         {
-
+            UserProperty pro = new UserProperty();
+            propertyGridRunnder.SelectedObjectName = "Runner";
+            propertyGridRunnder.SelectedObject = pro;
         }
     }
 }
