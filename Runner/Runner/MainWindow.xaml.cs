@@ -24,5 +24,10 @@ namespace Runner
         {
             InitializeComponent();
         }
+
+        private void runStart_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
