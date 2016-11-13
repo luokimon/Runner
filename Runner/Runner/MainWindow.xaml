@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
         xmlns:local="clr-namespace:Runner"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525">
@@ -13,10 +14,24 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="0"
-                    HorizontalAlignment="Left">
+                    Margin="3"
+                    HorizontalAlignment="Left"
+                    Orientation="Horizontal">
             <Button x:Name="runStart" 
+                    Margin="3"
                 Content="Start"
                     Click="runStart_Click"/>
+            <xctk:WatermarkTextBox 
+                Margin="3"
+                Watermark="Enter slave addr"
+                Text="{Binding Path=SlaveAddr}"/>
+            <xctk:WatermarkComboBox
+                Margin="3"
+                Watermark="who knows"
+                />
+            <xctk:SplitButton
+                Margin="3"
+                Content="Project"/>
         </StackPanel>
         <xctk:PropertyGrid Grid.Row ="1"
             x:Name="propertyGridRunnder"

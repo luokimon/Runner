@@ -14,7 +14,7 @@ namespace Runner.UserProperties
         [DisplayName("Writing Font Size")]
         [Description("This property uses the DoubleUpDown as the default editor.")]
         [ItemsSource(typeof(FontSizeItemsSource))]
-        public double WritingFontSize { get; set; }
+        public double WritingFontSize { get;}
     }
 
     public class FontSizeItemsSource : IItemsSource

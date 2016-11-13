@@ -21,8 +21,23 @@ namespace Runner
     /// </summary>
     public partial class MainWindow : Window
     {
+
+        public static readonly DependencyProperty DeviceInfoProperty =
+            DependencyProperty.Register("SlaveAddr", typeof(string), typeof(MainWindow), new PropertyMetadata(new PropertyChangedCallback(OnDeviceInfoPropertyChanged)));
+
+        public string SlaveAddr
+        {
+            get { return (string)GetValue(DeviceInfoProperty); }
+            set { SetValue(DeviceInfoProperty, value); }
+        }
+
+        private static void OnDeviceInfoPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args)
+        {
+            return;
+        }
         public MainWindow()
         {
+            SlaveAddr = "1C";
             InitializeComponent();
         }
 
