@@ -16,6 +16,8 @@ using Runner.UserProperties;
 using System.IO;
 using System.Diagnostics;
 using System.Xml;
+using Runner.DeviceChange;
+using System.Windows.Interop;
 
 namespace Runner
 {
@@ -40,6 +42,9 @@ namespace Runner
         {
             return;
         }
+
+        UsbDetector usbDetector;
+
         public MainWindow()
         {
             _mainDirPath = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
@@ -50,7 +55,19 @@ namespace Runner
             {
                 CreateXMLDocument();
             }
-                InitializeComponent();
+
+            InitializeComponent();
+
+            usbDetector = new UsbDetector();
+            usbDetector.StateChanged += new UsbStateChangedEventHandler(usbDetector_StateChanged);
+        }
+
+        void usbDetector_StateChanged(bool arrival)
+        {
+            if (arrival)
+                MessageBox.Show("add");
+            else
+                MessageBox.Show("removed");
         }
 
         public void CreateXMLDocument()
@@ -110,6 +127,15 @@ namespace Runner
             UserProperty pro = new UserProperty();
             propertyGridRunnder.SelectedObjectName = "Runner";
             propertyGridRunnder.SelectedObject = pro;
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            WindowInteropHelper interop = new WindowInteropHelper(this);
+            HwndSource hwndSource = HwndSource.FromHwnd(interop.Handle);
+            HwndSourceHook hook = new HwndSourceHook(usbDetector.HwndHandler);
+            hwndSource.AddHook(hook); ;
+            usbDetector.RegisterDeviceNotification(interop.Handle);
         }
     }
 }

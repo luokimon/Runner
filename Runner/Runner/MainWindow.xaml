@@ -7,6 +7,7 @@
         DataContext="{Binding RelativeSource={RelativeSource Self}}"
         xmlns:local="clr-namespace:Runner"
         mc:Ignorable="d"
+        Loaded="Window_Loaded"
         Title="MainWindow" Height="350" Width="525">
     <Grid>
         <Grid.RowDefinitions>
