@@ -34,6 +34,7 @@
                 Content="Project"/>
         </StackPanel>
         <xctk:PropertyGrid Grid.Row ="1"
+                           Margin="3"
             x:Name="propertyGridRunnder"
             ShowSearchBox="False"
             ShowSortOptions="False"
