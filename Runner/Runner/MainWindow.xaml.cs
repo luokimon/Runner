@@ -18,6 +18,10 @@ using System.Diagnostics;
 using System.Xml;
 using Runner.DeviceChange;
 using System.Windows.Interop;
+using LibUsbDotNet;
+using LibUsbDotNet.Main;
+using LibUsbDotNet.Info;
+using System.Collections.ObjectModel;
 
 namespace Runner
 {
@@ -28,6 +32,8 @@ namespace Runner
     {
         private string _mainDirPath;
         private string _fileSetting;
+
+        public static UsbDevice MyUsbDevice;
 
         public static readonly DependencyProperty DeviceInfoProperty =
             DependencyProperty.Register("SlaveAddr", typeof(string), typeof(MainWindow), new PropertyMetadata(new PropertyChangedCallback(OnDeviceInfoPropertyChanged)));
@@ -137,6 +143,45 @@ namespace Runner
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            // Dump all devices and descriptor information to console output.
+            UsbRegDeviceList allDevices = UsbDevice.AllDevices;
+            foreach (UsbRegistry usbRegistry in allDevices)
+            {
+                if (usbRegistry.Open(out MyUsbDevice))
+                {
+                    //Console.WriteLine(MyUsbDevice.Info.ToString());
+                    Debug.WriteLine(MyUsbDevice.Info.ToString());
+                    for (int iConfig = 0; iConfig < MyUsbDevice.Configs.Count; iConfig++)
+                    {
+                        UsbConfigInfo configInfo = MyUsbDevice.Configs[iConfig];
+                        //Console.WriteLine(configInfo.ToString());
+                        Debug.WriteLine(configInfo.ToString());
+
+                        ReadOnlyCollection<UsbInterfaceInfo> interfaceList = configInfo.InterfaceInfoList;
+                        for (int iInterface = 0; iInterface < interfaceList.Count; iInterface++)
+                        {
+                            UsbInterfaceInfo interfaceInfo = interfaceList[iInterface];
+                            //Console.WriteLine(interfaceInfo.ToString());
+                            Debug.WriteLine(interfaceInfo.ToString());
+
+                            ReadOnlyCollection<UsbEndpointInfo> endpointList = interfaceInfo.EndpointInfoList;
+                            for (int iEndpoint = 0; iEndpoint < endpointList.Count; iEndpoint++)
+                            {
+                                //Console.WriteLine(endpointList[iEndpoint].ToString());
+                                Debug.WriteLine(endpointList[iEndpoint].ToString());
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            // Free usb resources.
+            // This is necessary for libusb-1.0 and Linux compatibility.
+            UsbDevice.Exit();
+
+            // Wait for user input..
+            //Console.ReadKey();
 #if false
             WindowInteropHelper interop = new WindowInteropHelper(this);
             HwndSource hwndSource = HwndSource.FromHwnd(interop.Handle);
