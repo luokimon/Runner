@@ -65,9 +65,13 @@ namespace Runner
         void usbDetector_StateChanged(bool arrival)
         {
             if (arrival)
-                MessageBox.Show("add");
+                Debug.WriteLine("Add");
             else
-                MessageBox.Show("removed");
+                Debug.WriteLine("removed");
+            //if (arrival)
+            //    MessageBox.Show("add");
+            //else
+            //    MessageBox.Show("removed");
         }
 
         public void CreateXMLDocument()
