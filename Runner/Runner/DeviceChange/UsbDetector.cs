@@ -78,6 +78,7 @@ namespace Runner.DeviceChange
             Win32.DEV_BROADCAST_DEVICEINTERFACE deviceInterface = new Win32.DEV_BROADCAST_DEVICEINTERFACE();
             int size = Marshal.SizeOf(deviceInterface);
             deviceInterface.dbcc_size = size;
+            //deviceInterface.dbcc_devicetype = Win32.DBT_DEVTYP_VOLUME;
             deviceInterface.dbcc_devicetype = Win32.DBT_DEVTYP_DEVICEINTERFACE;
             deviceInterface.dbcc_reserved = 0;
             //deviceInterface.dbcc_handle = hwnd;

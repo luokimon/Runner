@@ -58,8 +58,10 @@ namespace Runner
 
             InitializeComponent();
 
+#if false
             usbDetector = new UsbDetector();
             usbDetector.StateChanged += new UsbStateChangedEventHandler(usbDetector_StateChanged);
+#endif
         }
 
         void usbDetector_StateChanged(bool arrival)
@@ -135,11 +137,13 @@ namespace Runner
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+#if false
             WindowInteropHelper interop = new WindowInteropHelper(this);
             HwndSource hwndSource = HwndSource.FromHwnd(interop.Handle);
             HwndSourceHook hook = new HwndSourceHook(usbDetector.HwndHandler);
             hwndSource.AddHook(hook); ;
             usbDetector.RegisterDeviceNotification(interop.Handle);
+#endif
         }
     }
 }
