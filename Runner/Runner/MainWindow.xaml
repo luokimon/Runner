@@ -15,7 +15,23 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <StackPanel Grid.Row="0"
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Expander x:Name="devsExpander"
+            Grid.Column="0"
+                  Grid.Row="0"
+                  Grid.RowSpan="2"
+                  ExpandDirection="Right"
+                  >
+            <StackPanel x:Name="devStackPanel"  
+                Width="70">
+            </StackPanel>     
+            
+        </Expander>
+            <StackPanel Grid.Row="0"
+                        Grid.Column="1"
                     Margin="3"
                     HorizontalAlignment="Left"
                     Orientation="Horizontal">
@@ -36,6 +52,7 @@
                 Content="Project"/>
         </StackPanel>
         <xctk:PropertyGrid Grid.Row ="1"
+                           Grid.Column="1"
                            Margin="3"
             x:Name="propertyGridRunnder"
             ShowSearchBox="False"

@@ -23,6 +23,7 @@ using LibUsbDotNet.Main;
 using LibUsbDotNet.Info;
 using LibUsbDotNet.DeviceNotify;
 using System.Collections.ObjectModel;
+using System.Windows.Controls.Primitives;
 
 namespace Runner
 {
@@ -34,6 +35,7 @@ namespace Runner
         private string _mainDirPath;
         private string _fileSetting;
 
+        List<ToggleButton> devButtons = new List<ToggleButton>();
         public static readonly DependencyProperty DeviceInfoProperty =
             DependencyProperty.Register("SlaveAddr", typeof(string), typeof(MainWindow), new PropertyMetadata(new PropertyChangedCallback(OnDeviceInfoPropertyChanged)));
 
@@ -198,28 +200,26 @@ namespace Runner
 #endif
         }
 
-        private static void OnDeviceNotifyEvent(object sender, DeviceNotifyEventArgs e)
+        private void OnDeviceNotifyEvent(object sender, DeviceNotifyEventArgs e)
         {
             // A Device system-level event has occured
-            switch(e.EventType)
+
+            switch (e.EventType)
             {
                 case EventType.DeviceArrival:
-                    {                        
-                        Debug.WriteLine("DeviceArrival");
-                        Debug.WriteLine("");
-                        Debug.WriteLine(e.ToString());
-                    }
-                    break;
                 case EventType.DeviceRemoveComplete:
                     {
-                        Debug.WriteLine("DeviceRemove");
-                        Debug.WriteLine("");
-                        Debug.WriteLine(e.ToString());
+                        Debug.WriteLine(e.EventType.ToString());                        
+                        Debug.WriteLine("FullName:" + e.Device.Name);
+                        if((e.Device.IdVendor == 0x284b)&&(e.Device.IdProduct == 0x3000))
+                            DeviceChange();
+                        //Debug.WriteLine(e.ToString());
                     }
                     break;
                 default:
                     {
-                        Debug.WriteLine("Other Event!");
+                        Debug.WriteLine(e.EventType.ToString());
+                        Debug.WriteLine("FullName:" + e.Device.Name);
                     }
                     break;
             }
@@ -228,6 +228,86 @@ namespace Runner
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             UsbDeviceNotifier.OnDeviceNotify -= OnDeviceNotifyEvent;
+        }
+
+        private void DeviceChange()
+        {
+            UsbRegDeviceList allDevices = UsbDevice.AllDevices;
+
+            if(devButtons.Count > 0)
+                devButtons.Clear();
+            foreach (UsbRegistry usbRegistry in allDevices)
+            {
+                if (usbRegistry.Open(out MyUsbDevice))
+                {
+                    if((MyUsbDevice.Info.Descriptor.ProductID == 0x3000)&&
+                            (MyUsbDevice.Info.Descriptor.VendorID == 0x284b))
+                    {
+                        byte[] buffer = new byte[256];
+                        buffer[0] = 0x01;
+                        buffer[1] = 0x1C;
+                        buffer[2] = 0x12;
+                        buffer[3] = 0x00;
+                        UsbSetupPacket setupPacket = new UsbSetupPacket(0x40,0xB0, 0, 3, 4);
+                        int len = 4;
+                        int transferLen;
+                        if(MyUsbDevice.ControlTransfer(ref setupPacket, buffer, len, out transferLen))
+                        {
+                            Debug.WriteLine("PowerOn OK!");
+                        }
+                    }
+                }
+            }
+
+            for(int i=0; i< devButtons.Count; i++)
+            {
+                devStackPanel.Children.Add(devButtons[i]);
+            }
+
+            if(devButtons.Count > 0)
+            {
+                devsExpander.IsExpanded = true;
+            }
+            else
+            {
+                devStackPanel.Children.Clear();
+                devsExpander.IsExpanded = false;
+            }
+
+            //foreach (UsbRegistry usbRegistry in allDevices)
+            //{
+
+                //    // Opens the USB device for communucation. 
+                //    // MyUsbDevice-The newly created UsbDevice.
+                //    if (usbRegistry.Open(out MyUsbDevice))
+                //    {
+                //        //Console.WriteLine(MyUsbDevice.Info.ToString());
+                //        // Gets the actual device descriptor the the current UsbDevice.
+                //        Debug.WriteLine(MyUsbDevice.Info.ToString());
+                //        // Gets all available configurations for this UsbDevice
+                //        for (int iConfig = 0; iConfig < MyUsbDevice.Configs.Count; iConfig++)
+                //        {
+                //            UsbConfigInfo configInfo = MyUsbDevice.Configs[iConfig];
+                //            //Console.WriteLine(configInfo.ToString());
+                //            Debug.WriteLine(configInfo.ToString());
+
+                //            ReadOnlyCollection<UsbInterfaceInfo> interfaceList = configInfo.InterfaceInfoList;
+                //            for (int iInterface = 0; iInterface < interfaceList.Count; iInterface++)
+                //            {
+                //                UsbInterfaceInfo interfaceInfo = interfaceList[iInterface];
+                //                //Console.WriteLine(interfaceInfo.ToString());
+                //                Debug.WriteLine(interfaceInfo.ToString());
+
+                //                ReadOnlyCollection<UsbEndpointInfo> endpointList = interfaceInfo.EndpointInfoList;
+                //                for (int iEndpoint = 0; iEndpoint < endpointList.Count; iEndpoint++)
+                //                {
+                //                    //Console.WriteLine(endpointList[iEndpoint].ToString());
+                //                    Debug.WriteLine(endpointList[iEndpoint].ToString());
+                //                }
+                //            }
+                //        }
+                //    }
+                //}
         }
     }
 }
