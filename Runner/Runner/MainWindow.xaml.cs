@@ -16,7 +16,6 @@ using Runner.UserProperties;
 using System.IO;
 using System.Diagnostics;
 using System.Xml;
-using Runner.DeviceChange;
 using System.Windows.Interop;
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
@@ -35,6 +34,9 @@ namespace Runner
         private string _mainDirPath;
         private string _fileSetting;
 
+        private const short twscVID = 0x284b;
+        private const short twscPID = 0x3000;
+
         List<ToggleButton> devButtons = new List<ToggleButton>();
         public static readonly DependencyProperty DeviceInfoProperty =
             DependencyProperty.Register("SlaveAddr", typeof(string), typeof(MainWindow), new PropertyMetadata(new PropertyChangedCallback(OnDeviceInfoPropertyChanged)));
@@ -47,6 +49,8 @@ namespace Runner
 
         private static void OnDeviceInfoPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs args)
         {
+            MainWindow _mainWindow = d as MainWindow;
+            SettingsRunner.Default.SlaveAddr = _mainWindow.SlaveAddr;
             return;
         }
 
@@ -148,6 +152,9 @@ namespace Runner
         {
             UsbDeviceNotifier.OnDeviceNotify += OnDeviceNotifyEvent;
 
+            SlaveAddr = SettingsRunner.Default.SlaveAddr;
+
+
 #if false
             // Dump all devices and descriptor information to console output.
             // Gets a list of all available USB devices (WinUsb, LibUsb, Linux LibUsb v1.x).
@@ -227,7 +234,8 @@ namespace Runner
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            UsbDeviceNotifier.OnDeviceNotify -= OnDeviceNotifyEvent;
+            UsbDeviceNotifier.OnDeviceNotify -= OnDeviceNotifyEvent;            
+            SettingsRunner.Default.Save();
         }
 
         private void DeviceChange()
@@ -240,8 +248,8 @@ namespace Runner
             {
                 if (usbRegistry.Open(out MyUsbDevice))
                 {
-                    if((MyUsbDevice.Info.Descriptor.ProductID == 0x3000)&&
-                            (MyUsbDevice.Info.Descriptor.VendorID == 0x284b))
+                    if((MyUsbDevice.Info.Descriptor.ProductID == twscPID)&&
+                            (MyUsbDevice.Info.Descriptor.VendorID == twscVID))
                     {
                         byte[] buffer = new byte[256];
                         buffer[0] = 0x01;

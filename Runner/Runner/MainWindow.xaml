@@ -42,7 +42,7 @@
             <xctk:WatermarkTextBox 
                 Margin="3"
                 Watermark="Enter slave addr"
-                Text="{Binding Path=SlaveAddr}"/>
+                Text="{Binding Path=SlaveAddr, UpdateSourceTrigger=PropertyChanged}"/>
             <xctk:WatermarkComboBox
                 Margin="3"
                 Watermark="who knows"
