@@ -21,6 +21,7 @@ using System.Windows.Interop;
 using LibUsbDotNet;
 using LibUsbDotNet.Main;
 using LibUsbDotNet.Info;
+using LibUsbDotNet.DeviceNotify;
 using System.Collections.ObjectModel;
 
 namespace Runner
@@ -32,8 +33,6 @@ namespace Runner
     {
         private string _mainDirPath;
         private string _fileSetting;
-
-        public static UsbDevice MyUsbDevice;
 
         public static readonly DependencyProperty DeviceInfoProperty =
             DependencyProperty.Register("SlaveAddr", typeof(string), typeof(MainWindow), new PropertyMetadata(new PropertyChangedCallback(OnDeviceInfoPropertyChanged)));
@@ -49,7 +48,7 @@ namespace Runner
             return;
         }
 
-        UsbDetector usbDetector;
+        //UsbDetector usbDetector;
 
         public MainWindow()
         {
@@ -141,16 +140,30 @@ namespace Runner
             propertyGridRunnder.SelectedObject = pro;
         }
 
+        public static UsbDevice MyUsbDevice;
+        public static IDeviceNotifier UsbDeviceNotifier = DeviceNotifier.OpenDeviceNotifier();
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            UsbDeviceNotifier.OnDeviceNotify += OnDeviceNotifyEvent;
+
+#if false
             // Dump all devices and descriptor information to console output.
+            // Gets a list of all available USB devices (WinUsb, LibUsb, Linux LibUsb v1.x).
             UsbRegDeviceList allDevices = UsbDevice.AllDevices;
+            // UsbDevice.AllWinUsbDevices-Gets a list of all available WinUSB USB devices.
+            //UsbRegDeviceList allDevices = UsbDevice.AllWinUsbDevices;
+
+            // UsbRegistry-USB device registry members common to both LibUsb and WinUsb devices.
             foreach (UsbRegistry usbRegistry in allDevices)
             {
+                // Opens the USB device for communucation. 
+                // MyUsbDevice-The newly created UsbDevice.
                 if (usbRegistry.Open(out MyUsbDevice))
                 {
                     //Console.WriteLine(MyUsbDevice.Info.ToString());
+                    // Gets the actual device descriptor the the current UsbDevice.
                     Debug.WriteLine(MyUsbDevice.Info.ToString());
+                    // Gets all available configurations for this UsbDevice
                     for (int iConfig = 0; iConfig < MyUsbDevice.Configs.Count; iConfig++)
                     {
                         UsbConfigInfo configInfo = MyUsbDevice.Configs[iConfig];
@@ -182,13 +195,39 @@ namespace Runner
 
             // Wait for user input..
             //Console.ReadKey();
-#if false
-            WindowInteropHelper interop = new WindowInteropHelper(this);
-            HwndSource hwndSource = HwndSource.FromHwnd(interop.Handle);
-            HwndSourceHook hook = new HwndSourceHook(usbDetector.HwndHandler);
-            hwndSource.AddHook(hook); ;
-            usbDetector.RegisterDeviceNotification(interop.Handle);
 #endif
+        }
+
+        private static void OnDeviceNotifyEvent(object sender, DeviceNotifyEventArgs e)
+        {
+            // A Device system-level event has occured
+            switch(e.EventType)
+            {
+                case EventType.DeviceArrival:
+                    {                        
+                        Debug.WriteLine("DeviceArrival");
+                        Debug.WriteLine("");
+                        Debug.WriteLine(e.ToString());
+                    }
+                    break;
+                case EventType.DeviceRemoveComplete:
+                    {
+                        Debug.WriteLine("DeviceRemove");
+                        Debug.WriteLine("");
+                        Debug.WriteLine(e.ToString());
+                    }
+                    break;
+                default:
+                    {
+                        Debug.WriteLine("Other Event!");
+                    }
+                    break;
+            }
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            UsbDeviceNotifier.OnDeviceNotify -= OnDeviceNotifyEvent;
         }
     }
 }
