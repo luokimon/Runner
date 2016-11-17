@@ -23,7 +23,7 @@ using LibUsbDotNet.Info;
 using LibUsbDotNet.DeviceNotify;
 using System.Collections.ObjectModel;
 using System.Windows.Controls.Primitives;
-
+using Xml.Net;
 namespace Runner
 {
     /// <summary>
@@ -150,6 +150,28 @@ namespace Runner
         public static IDeviceNotifier UsbDeviceNotifier = DeviceNotifier.OpenDeviceNotifier();
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            Person person = new Person();
+            person.Name = "Barack Obama";
+            person.Age = 54;
+            person.BirthDate = new DateTime(1961, 9, 4);
+            person.Children = new List<string> { "Natasha", "Malia" };
+
+            string xml = Xml.Net.XmlConvert.SerializeObject(person);
+
+            Debug.WriteLine(xml);
+
+            var xml1 = @"<Person>
+  <Name>Barack Obama</Name>
+  <Age>54</Age>
+  <BirthDate>1961-09-04 00:00:00</BirthDate>
+  <Children>
+    <Element>Natasha</Element>
+    <Element>Malia</Element>
+  </Children>
+</Person>";
+            person = Xml.Net.XmlConvert.DeserializeObject<Person>(xml1);
+            string name = person.Name;
+
             UsbDeviceNotifier.OnDeviceNotify += OnDeviceNotifyEvent;
 
             SlaveAddr = SettingsRunner.Default.SlaveAddr;
@@ -317,5 +339,13 @@ namespace Runner
                 //    }
                 //}
         }
+    }
+
+    public class Person
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        public DateTime BirthDate { get; set; }
+        public List<string> Children { get; set; }
     }
 }
