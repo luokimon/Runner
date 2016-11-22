@@ -51,6 +51,11 @@
             <xctk:SplitButton
                 Margin="3"
                 Content="Project"/>
+            <TextBlock
+                Margin="3"
+                Text="{Binding MultiPortMessage}">
+                
+            </TextBlock>
         </StackPanel>
         <xctk:PropertyGrid Grid.Row ="1"
                            Grid.Column="1"

@@ -24,6 +24,7 @@ using LibUsbDotNet.DeviceNotify;
 using System.Collections.ObjectModel;
 using System.Windows.Controls.Primitives;
 using System.Data;
+using System.ComponentModel;
 
 namespace Runner
 {
@@ -35,8 +36,8 @@ namespace Runner
         private string _mainDirPath;
         private string _fileSetting;
 
-        private const short twscVID = 0x284b;
-        private const short twscPID = 0x3000;
+        private const ushort twscVID = 0x284b;
+        private const ushort twscPID = 0x3000;
 
         List<ToggleButton> devButtons = new List<ToggleButton>();
         public static readonly DependencyProperty DeviceInfoProperty =
@@ -55,158 +56,37 @@ namespace Runner
             return;
         }
 
+        #region INotifyPropertyChanged Members
 
-        // Put the next line into the Declarations section.
-        private DataSet _dataSet;
-        private void MakeDataTables()
+        //PropertyChanged Event 정의
+        /// <summary>
+        /// Occurs when a property value changes.
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
+        /// Called when [property changed].
+        /// </summary>
+        /// <param name="strPropertyName">Name of the STR property.</param>
+        protected virtual void OnPropertyChanged(string strPropertyName)
         {
-            // Run all of the functions
-            MakeParentTable();
-            MakeChildTable();
-            MakeDataRelation();
-            BindToDataGrid();
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(strPropertyName));
+            }
         }
 
-        private void MakeParentTable()
+        #endregion
+
+        private string _multiPortMessage;
+        public string MultiPortMessage
         {
-            // Create a new DataTable.
-            DataTable table = new DataTable("ParentTable");
-            // Declare variables for DataColumn and DataRow objects.
-            DataColumn column;
-            DataRow row;
-
-            // Create new DataColumn, set DataType,
-            // ColumnName and add to DataTable.
-            column = new DataColumn();
-            column.DataType = System.Type.GetType("System.Int32");
-            column.ColumnName = "id";
-            column.ReadOnly = true;
-            column.Unique = true;
-            // Add the Column to the DataColumnCollection.
-            table.Columns.Add(column);
-
-            // Create second column
-            column = new DataColumn();
-            column.DataType = System.Type.GetType("System.String");
-            column.ColumnName = "ParentItem";
-            column.AutoIncrement = false;
-            column.Caption = "ParentItem";
-            column.ReadOnly = false;
-            column.Unique = false;
-            // Add the column to the table.
-            table.Columns.Add(column);
-
-            // Make the ID column the primary key column.
-            DataColumn[] PrimaryKeyColumns = new DataColumn[1];
-            PrimaryKeyColumns[0] = table.Columns["id"];
-            table.PrimaryKey = PrimaryKeyColumns;
-
-            // Instantiate the DataSet variable.
-            _dataSet = new DataSet();
-            // Add the new DataTable to the DataSet.
-            _dataSet.Tables.Add(table);
-
-            // Create three new DataRow objects and add
-            // them to the DataTable
-            for(int i=0; i<=2;i++)
+            get { return _multiPortMessage; }
+            set
             {
-                row = table.NewRow();
-                row["id"] = i;
-                row["ParentItem"] = "ParentItem " + i;
-                table.Rows.Add(row);
+                _multiPortMessage = value;
+                OnPropertyChanged("MultiPortMessage");
             }
-
-        }
-
-        private void MakeChildTable()
-        {
-            // Create a new DataTable.
-            DataTable table = new DataTable("ChildTable");
-            DataColumn column;
-            DataRow row;
-
-            // Create first column and add to the DataTable.
-            column = new DataColumn();
-            column.DataType = System.Type.GetType("System.Int32");
-            column.ColumnName = "ChildID";
-            column.AutoIncrement = true;
-            column.Caption = "ID";
-            column.ReadOnly = true;
-            column.Unique = true;
-
-            // Add the column to the DataColumnCollection.
-            table.Columns.Add(column);
-
-            // Create second column.
-            column = new DataColumn();
-            column.DataType = System.Type.GetType("System.String");
-            column.ColumnName = "ChildItem";
-            column.AutoIncrement = false;
-            column.Caption = "ChildItem";
-            column.ReadOnly = false;
-            column.Unique = false;
-            table.Columns.Add(column);
-
-            // Create third column.
-            column = new DataColumn();
-            column.DataType = System.Type.GetType("System.Int32");
-            column.ColumnName = "ParentID";
-            column.AutoIncrement = false;
-            column.Caption = "ParentID";
-            column.ReadOnly = false;
-            column.Unique = false;
-            table.Columns.Add(column);
-
-            _dataSet.Tables.Add(table);
-
-            // Create three sets of DataRow objects,  
-            // five rows each, and add to DataTable. 
-            for (int i = 0; i <= 4; i++)
-            {
-                row = table.NewRow();
-                row["childID"] = i;
-                row["ChildItem"] = "Item " + i;
-                row["ParentID"] = 0;
-                table.Rows.Add(row);
-            }
-            for (int i = 0; i <= 4; i++)
-            {
-                row = table.NewRow();
-                row["childID"] = i + 5;
-                row["ChildItem"] = "Item " + i;
-                row["ParentID"] = 1;
-                table.Rows.Add(row);
-            }
-            for (int i = 0; i <= 4; i++)
-            {
-                row = table.NewRow();
-                row["childID"] = i + 10;
-                row["ChildItem"] = "Item " + i;
-                row["ParentID"] = 2;
-                table.Rows.Add(row);
-            }
-
-        }
-
-        private void MakeDataRelation()
-        {
-            // DataRelation requires two DataColumn  
-            // (parent and child) and a name.
-            DataColumn parentColumn =
-                _dataSet.Tables["ParentTable"].Columns["id"];
-            DataColumn childColumn =
-                _dataSet.Tables["ChildTable"].Columns["ParentID"];
-            DataRelation relation = new
-                DataRelation("parent2Child", parentColumn, childColumn);
-            _dataSet.Tables["ChildTable"].ParentRelations.Add(relation);
-        }
-
-        private void BindToDataGrid()
-        {
-            // Instruct the DataGrid to bind to the DataSet, with the  
-            // ParentTable as the topmost DataTable.
-            //dataGrid1.SetDataBinding(_dataSet, "ParentTable");
-            dataGrid1.ItemsSource = _dataSet.Tables[1].DefaultView;
         }
 
         //UsbDetector usbDetector;
@@ -214,8 +94,6 @@ namespace Runner
         {
 
             InitializeComponent();
-
-            MakeDataTables();
 
             _mainDirPath = System.IO.Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName);
 
@@ -249,8 +127,10 @@ namespace Runner
             propertyGridRunnder.SelectedObject = pro;
         }
 
-        public static UsbDevice MyUsbDevice;
+        public static UsbDevice usbDevice;
         public static IDeviceNotifier UsbDeviceNotifier = DeviceNotifier.OpenDeviceNotifier();
+        public static UsbDeviceFinder devFinder = new UsbDeviceFinder(twscPID, twscVID);
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             UsbDeviceNotifier.OnDeviceNotify += OnDeviceNotifyEvent;
@@ -291,6 +171,22 @@ namespace Runner
 
         private void DeviceChange()
         {
+            ErrorCode ec = ErrorCode.None;
+
+            try
+            {
+                usbDevice = UsbDevice.OpenUsbDevice(devFinder);
+
+                if (usbDevice == null) throw new Exception("Device Not Found.");
+
+
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine((ec != ErrorCode.None ? ec + ":" : String.Empty) + ex.Message);
+            }
+#if false
             UsbRegDeviceList allDevices = UsbDevice.AllDevices;
 
             if(devButtons.Count > 0)
@@ -367,7 +263,8 @@ namespace Runner
                 //        }
                 //    }
                 //}
-        }
+#endif
+            }
     }
 
     public class Person
